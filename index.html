@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra Cứu Đáp Án Hoathinh3D</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; color: #1e293b; font-size: 1.5rem; }
+        .search-box { position: sticky; top: 10px; z-index: 100; }
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px;
+            font-size: 16px; outline: none; transition: border 0.3s; box-sizing: border-box;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        input:focus { border-color: var(--primary); }
+        .stats { margin: 10px 0; font-size: 14px; color: #64748b; }
+        .quiz-item { 
+            background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); transition: transform 0.2s;
+        }
+        .quiz-item:active { transform: scale(0.98); }
+        .question { font-weight: 600; color: #1e293b; margin-bottom: 5px; display: block; }
+        .answer { color: var(--primary); font-weight: bold; background: #eff6ff; padding: 4px 8px; border-radius: 4px; }
+        .highlight { background: yellow; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cẩm Nang Hoathinh3D</h1>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Nhập từ khóa câu hỏi hoặc đáp án..." autocomplete="off">
+    </div>
+    <div class="stats" id="stats">Đang tải dữ liệu...</div>
+    <div id="resultList"></div>
+</div>
+
+<script>
+    // Dữ liệu từ bạn cung cấp
+    const data = {
+        "Nhân vật chính trong Quân tử vô tật": "Dao Cơ",
+        "Vô tâm trong thiếu niên ca hành tên gọi khác là gì": "Diệp An Thế",
+        "Cha của Ngao Bính tên gì?": "Ngao Quảng",
+        "Cô kiếm tiên trong thiếu niên ca hành là ai": "Lạc Thanh Dương",
+        "Nam chính trong phim Ta Là Đại Thần Tiên": "Thời Giang",
+        "Trong phim Đại đạo triều thiên Tỉnh Cửu cùng thư đồng đến đâu tu luyện": "Thanh Sơn tông",
+        "Nam chính trong Sơn Hà Kiếm Tâm": "Yến Vô Sư",
+        "Thê tử của Điền Bất Dịch trong Tru Tiên": "Tô Như",
+        "Nam chính trong Đô Thị Cổ Tiên Y": "Diệp Bất Phàm",
+        "Thế giới trong Mục thần kí chia làm mấy đại vực chính": "9",
+        "Cổ Hà là luyện dược sư mấy phầm": "Lục phẩm 《6》",
+        "ID game Diệp Tu sử dụng trong phim Toàn Chức Cao Thủ?": "cả 1 và 2 《 Thủ Dụ + Diệp Thu 》",
+        "Nhân vật chính trong Tần Thời Minh Nguyệt": "Kính Thiên Minh",
+        "Tư Mã Ý trong Hỏa Phụng Liêu có tên tự là gì?": "Trọng Đạt",
+        "Lý Hàn Y trong phim Thiếu Niên ca Hành sử dụng vũ khí gì?": "Cả 1 và 2 《 Thính Vũ Kiếm + Thiết Mã Băng Hà 》",
+        "Trong phim Đại Đạo Triều Thiên, Triệu Lạp Nguyệt đến từ phong nào?": "Thần Mạt Phong",
+        "Ai là chủ nhân của Thôn Thôn trong Nguyên Tôn": "Yêu Yêu",
+        "Mục Thần Ký được chuyển thể từ tiểu thuyết nào": "Thạch Thư",
+        "Dương Khai trong Võ Luyện Đình Phong song tu với ai đầu tiên?": "Tô Nhan",
+        "Tần Mục trong Mục Thần Ký lớn lên ở đâu?": "Tàn Lão Thôn",
+        "Bạch Nguyệt Khôi còn có tên gọi khác là gì?": "Bà chủ Bạch",
+        "Nhân vật chính trong Ta Có Thể Giác Ngộ Vô Hạn là ai?": "Tiêu Vân",
+        "Trong Kiếm Lai, khi Man Châu Động Thiên đứng trước nguy cơ bị hủy diệt, là ai đã đứng ra bảo vệ người dân trong trấn?": "Tề Tình Xuân",
+        "Lâm Thất Dạ trong phim Tràm Thần gặp phải biến cố gì?": "Bị mù",
+        "Trong Na Tra: Ma Đồng Giáng Thế Na Tra được sinh ra từ gì?": "Ma Hoàn",
+        "Vương lâm trong Tiên Nghịch ở đâu có Tiên Ngọc đột phá Anh biến": "Đi cướp",
+        "Nhân vật chính trong Trấn Hồn Nhai": "Hạ Linh",
+        "Chu tước thánh sứ trong Tru Tiên": "U Cơ",
+        "Nhân vật chính Duy ngã độc thần": "Ninh Thần",
+        "Trong các bộ phim sau đây, bộ nào nhân vật chính có hệ thống?": "Ta Có Thể Giác Ngộ Vô Hạn",
+        "Sở Phong trong Tu La Võ Thần có huyết mạch gì?": "Thiên Lôi",
+        "Trong phim Đại Đạo Triều Thiên, Tỉnh Cửu đã thu nhận ai làm thư đồng?": "Lưu Thập Tuế",
+        "Ai là sư phụ của Diệp Phàm trong Già Thiên?": "Lý Nhược Ngu",
+        "Bộ phim Thiên Bảo Phục Yêu Lục lấy bối cảnh thời kỳ nào?": "Đường",
+        "Trong phim Vạn Cổ Tối Cường Tông, Quân Thường Tiếu chiêu mộ ai làm đệ tử đầu tiên ?": "Lục Thiên Thiên",
+        "Phong Hi trong Phàm Nhân Tu Tiên là yêu thú nào?": "Liệt Phong Thú",
+        "Tam Thánh Niết là biệt danh của ai trong Họa Giang Hồ Chi Bất Lương Nhân?": "Lý Tinh Vân",
+        "Liễu Thất Nguyệt trong Thương Nguyên Đồ sử dụng vũ khí gì?": "Cung",
+        "Sư tỷ của Nguyên Dao trong Phàm Nhân Tu Tiên tên là gì?": "Nghiên Lệ",
+        "Ôn Thiên Nhân trong Phàm Nhân Tu Tiên tu luyện công pháp gì?": "Lục Cực Chân Ma Công",
+        "Ai sau đây làm lễ cưới với Lý Mộ Uyển trong Tiên Nghịch thì bị anh Lâm giết ?": "Tôn Chấn Vĩ",
+        "Nhân vật chính trong phim Vạn Giới Tiên Trung là ai?": "Diệp Tinh Vân",
+        "Phong Hi trong Phàm Nhân Tu Tiên là yêu thú cấp mấy?": "9",
+        "Phong Hi trong Phàm Nhân Tu Tiên tại sao được gọi là Đại Thiện Nhân ?": "Cả 1 và 2",
+        "Con gái của quỷ vương trong Tru Tiên tên là gì?": "Bích Dao",
+        "Gia Gia của Thạch Hạo là ai?": "Thạch Trung Thiên",
+        "Tiêu Viêm từng nhận danh hiệu gì tại \"Luyện Đan Sư Đại Hội\"?": "Quán Quân",
+        "Ai là người bảo vệ Hải Thần Đảo?": "Ba Tái Tây",
+        "Loại đan dược giúp Tiêu Viêm khôi phục thiên phú tên là gì?": "Phá Tông Đan",
+        "Cổ Hà trong Đấu Phá Thương Khung lúc xuất hiện ở Vân Lam Tông là luyện dược sư mấy phẩm?": "Lục Phẩm",
+        "Môn phái đầu tiên Vương Lâm gia nhập là?": "Hằng Nhạc Phái",
+        "Tiêu Viêm gia nhập tông môn nào đầu tiên?": "Vân Lam Tông",
+        "Trước Tần Mục, ai là giáo chủ của Thiên Ma giáo?": "Lệ Thiên Hành",
+        "Klein trong 《Quỷ Bí Chi Chủ》 vô tình bước vào con đường phi phàm thông qua?": "Nghi Thức Cầu Nguyện",
+        "Kỹ năng kết hợp nhiều dị hỏa cùng lúc của Tiêu Viêm trong Đấu Phá Thương Khung》 là gì?": "Phật Nộ Hỏa Liên",
+        "Dược sư trong 《Mục Thần Ký》 còn có danh xưng là gì?": "Ngọc Diện Độc Vương",
+        "Học viện đầu tiên mà Đường Tam theo học ở 《Đấu La Đại Lục》 là?": "Học viện Sử Lai Khắc",
+        "Danh hiệu của Đường Hạo trong 《Đấu La Đại Lục》 là gì?": "Hạo Thiên Đấu La",
+        "Nhân vật \"Tiểu Y Tiên\" trong 《Đấu Phá Thương Khung》 chuyên về lĩnh vực gì?": "Độc Thuật",
+        "Võ hồn của Cổ Dung trong Đấu La Đại Lục》 là gì?": "Cốt Long",
+        "Nhân vật \"Nạp Lan Yên Nhiên\" quan hệ với Tiêu Viêm là gì?": "Vợ Chưa Cưới",
+        "Vân Thanh Nham là Nhân vật chính trong phim nào?": "Tiên Đế Trề Về",
+        "Vị biểu ca bị phế linh hải của Vân thanh nam trong Tiên Đế Trở Về?": "Vân Hiên",
+        "Tần Mục sinh ra ở đâu?": "Vô Ưu Hương",
+        "Áo Tư Tạp trong 《Đấu La Đại Lục》thuộc hệ hồn sư nào?": "Phụ trợ hệ",
+        "Dị hỏa từng thuộc về Dược Trần được truyền cho Tiêu Viêm trong 《Đấu Phá Thương Khung》 là gì?": "Cốt Linh Lãnh Hỏa",
+        "Các cảnh giới sau đây, đâu là cảnh giới đầu tiên trong các bộ phim hoạt hình trung quốc?": "Linh Thai",
+        "Trong Đấu Phá Thương Khung, khi Vân Lam Tông giải tán thì Vân Vận đã gia nhập tông phái nào?": "Hoa Tông",
+        "Bảo vật Tư bà bà trong Mục Thần Ký để lại cho Tần Mục khi lên ngôi giáo chủ?": "Đại Dục Thiên Ma Kinh",
+        "Võ hồn của Ninh Vinh Vinh trong《Đấu La Đại Lục》 là?": "Thất Bảo Lưu Ly Tháp",
+        "Quốc gia phàm nhân nơi Vương Lâm trong 《Tiên Nghịch》 sinh ra là?": "Chu Quốc",
+        "Nhân vật Medusa trong 《Đấu Phá Thương Khung》 vốn là thủ lĩnh của tộc nào?": "Xà Nhân tộc",
+        "Vân Vọng Thư là nhân vật chính trong bộ phim hoạt hình nào?": "Vân Thâm Bất Tri Mộng",
+        "Vân thanh Nham trong 《Tiên Đế Trở Về》 đã thu phục hung thú nào?": "Hồn Độn",
+        "Loại dị hỏa đầu tiên Tiêu Viêm trong 《Đấu Phá Thương Khung》 thu phục là gì?": "Thanh Liên Địa Tâm Hỏa",
+        "Thiên hoả đầu tiên Vân Thanh Nham trong 《Tiên Đế Trở Về》 đã thu phục khi trở về?": "Thanh Liên địa tâm hỏa",
+        "Lão Què trong 《Mục Thần Ký》 vì sao mất một bên chân?": "Vì ăn trộm Đế Điệp",
+        "Đội hình Sử Lai Khắc Thất Quái trong 《Đấu La Đại Lục》 có tổng cộng bao nhiêu thành viên?": "7",
+        "Thanh Liên địa tâm hỏa xếp thứ mấy trong Dị Hỏa bảng《Đấu Phá Thương Khung》?": "19",
+        "Hồn sư trong 《Đấu La Đại Lục》 đạt tới cấp bậc nào thì được gọi là Phong Hào Đấu La?": "Cấp 90",
+        "Ai là người kế thừa thần vị Thiên Sứ trong 《Đấu La Đại Lục》?": "Thiên Nhận Tuyết",
+        "Thành phố nơi câu chuyện ban đầu trong 《Quỷ Bí Chi Chủ》 diễn ra là?": "Tingen",
+        "Thạch Mục là nhần vật chính trong phim hoạt hình nào?": "Huyền Giới Chi Môn",
+        "Thân phận thật của Tư bà bà - Tư Ấu U trong 《Mục Thần Ký》?": "Thiên Ma giáo thánh nữ",
+        "Thần khí mà Vân Thanh Nham mang trở về từ tiên giới?": "Thiên Thần Kiếm",
+        "Khôi lỗi Tiêu Viêm 《Đấu Phá Thương Khung》 dùng thân thể của Địa Ma Lão Quỷ tạo thành?": "Thiên Yêu Khôi",
+        "Danh hiệu của Vân Thanh Nam trong 《Tiên Đế Trở Về》 khi còn ở tiên giới?": "Vân đế",
+        "Mục Thần Ký được chuyển thể từ tiểu thuyết của tác giả nào?": "Trạch Trư",
+        "Hồn hoàn thứ nhất của Đường Tam trong 《Đấu La Đại Lục》 được săn bắn từ con hồn thú nào?": "Nhân Diện Ma Chu",
+        "Thân phận thật của lão đồ tể trong 《Mục Thần Ký》?": "Thiên Đao",
+        "Tư ẤU U trong 《Mục Thần Ký》 có quan hệ gì với Lệ Thiên Hành?": "Vợ Chồng",
+        "Nhân vật chính của Quỷ Bí Chi Chủ là ai?": "Klein Moretti",
+        "Danh xưng của Trần Tâm trong 《Đấu La Đại Lục》 là gì?": "Kiếm Đấu La",
+        "Trong 《Mục Thần Ký》 trước Tần Mục, ai là giáo chủ của Thiên Ma giáo?": "Lệ Thiên Hành"
+    };
+
+    const searchInput = document.getElementById('searchInput');
+    const resultList = document.getElementById('resultList');
+    const stats = document.getElementById('stats');
+
+    function render(filter = "") {
+        let html = "";
+        let count = 0;
+        const query = filter.toLowerCase();
+
+        for (let q in data) {
+            if (q.toLowerCase().includes(query) || data[q].toLowerCase().includes(query)) {
+                html += `
+                    <div class="quiz-item">
+                        <span class="question">${q}</span>
+                        <span class="answer">${data[q]}</span>
+                    </div>
+                `;
+                count++;
+            }
+        }
+        resultList.innerHTML = html;
+        stats.innerText = `Tìm thấy ${count} kết quả`;
+    }
+
+    searchInput.addEventListener('input', (e) => render(e.target.value));
+    
+    // Khởi tạo lần đầu
+    render();
+</script>
+
+</body>
+</html>
